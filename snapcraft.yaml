@@ -28,8 +28,6 @@ parts:
 
     plugin: dump
     source: .
-    organize:
-      fontrapak:  bin/fontrapak  
 
 icon: snap/gui/fontrapak.svg
 license: GPL-3.0+ 
@@ -40,8 +38,8 @@ plugs:
 
 apps:
   fontrapak:
-    command: bin/fontrapak
-    extensions: [kde-neon]
+    command: fontrapak
+    extensions: [gnome]
     environment:
       QT_QPA_PLATFORM: xcb # Required for Qt applications in a snap
     plugs:
