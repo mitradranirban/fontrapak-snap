@@ -28,6 +28,7 @@ parts:
 
     plugin: dump
     source: .
+      organize:bin/fontrapak
 
 icon: snap/gui/fontrapak.svg
 license: GPL-3.0+ 
@@ -38,7 +39,7 @@ plugs:
 
 apps:
   fontrapak:
-    command: fontrapak
+    command: bin/fontrapak
     extensions: [gnome]
     environment:
       QT_QPA_PLATFORM: xcb # Required for Qt applications in a snap
