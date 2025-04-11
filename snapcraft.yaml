@@ -28,7 +28,8 @@ parts:
 
     plugin: dump
     source: .
-      organize:bin/fontrapak
+    organize: 
+      fontrapak: bin/fontrapak
 
 icon: snap/gui/fontrapak.svg
 license: GPL-3.0+ 
