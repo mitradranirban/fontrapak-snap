@@ -1,4 +1,4 @@
-name: fontrapak 
+name: fontrapak
 title: Fontra Pak (Unofficial snap package)
 base: core22 # the base snap is the execution environment for this snap
 version: '0.1.dev11293+g1fc208d'
@@ -7,11 +7,11 @@ description: |
   Fontra is an open-source, browser-based, cross-platform, variable-first
    font editor. Fontra extends the boundaries of what current font editors
    can do. Originally developed to make the design and production of large
-   CJK fonts more efficient, Fontra provides deeper integration of 
-   variable font technology and improved   usability of variable 
-   components as design elements. 
+   CJK fonts more efficient, Fontra provides deeper integration of
+   variable font technology and improved   usability of variable
+   components as design elements.
 
-grade:  stable
+grade: stable
 confinement: strict
 
 architectures:
@@ -20,19 +20,23 @@ architectures:
 
 parts:
   fontrapak:
-    stage-packages:
-    - libgl1
-    - libegl1
-    - libxcb-cursor0
-    - libxcb1
-
     plugin: dump
     source: .
-    organize: 
+    organize:
       fontrapak: bin/fontrapak
+    stage-packages:
+      - libgl1
+      - libegl1
+      - libxcb-cursor0
+      - libxcb1
+      - libxcb-render0 # Missing dependency
+      - libxcb-shm0    # Missing dependency
+      - libxcb-randr0  # Missing dependency
+      - libxcb-xfixes0 # Missing dependency
+      - libxkbcommon0  # Missing dependency
 
 icon: snap/gui/fontrapak.svg
-license: GPL-3.0+ 
+license: GPL-3.0+
 
 plugs:
   shared-memory:
@@ -44,6 +48,8 @@ apps:
     extensions: [gnome]
     environment:
       QT_QPA_PLATFORM: xcb # Required for Qt applications in a snap
+      QT_QPA_PLATFORM_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/plugins/platforms:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt6/plugins/platforms # Explicitly set plugin path
+      LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa # Include Mesa libraries if needed
     plugs:
       - x11
       - unity7
@@ -56,12 +62,12 @@ apps:
       - wayland # for wayland support
 
 # If you have any desktop integration files (.desktop, icons), add them here:
-#install: |
-#  mkdir -p $SNAPCRAFT_PART_INSTALL/share/applications
-#  cp snap/gui/fontrapak.desktop $SNAPCRAFT_PART_INSTALL/share/applications/
-#  mkdir -p $SNAPCRAFT_PART_INSTALL/share/icons/hicolor/scalable/apps
-#  cp snap/gui/fontrapak.svg $SNAPCRAFT_PART_INSTALL/share/icons/hicolor/scalable/apps/
-#
+install: |
+  mkdir -p $SNAPCRAFT_PART_INSTALL/share/applications
+  cp snap/gui/fontrapak.desktop $SNAPCRAFT_PART_INSTALL/share/applications/
+  mkdir -p $SNAPCRAFT_PART_INSTALL/share/icons/hicolor/scalable/apps
+  cp snap/gui/fontrapak.svg $SNAPCRAFT_PART_INSTALL/share/icons/hicolor/scalable/apps/
+
 build-packages:
 # - libgl1-mesa-dev # If you have openGL issues
 # - libgl1
@@ -109,4 +115,4 @@ build-packages:
 # - libxml2-dev
 # - libssl-dev
 # - libffi-dev
- - libpython3-dev # If you have python dependency issues
+ - libpython3-dev # If you have python
