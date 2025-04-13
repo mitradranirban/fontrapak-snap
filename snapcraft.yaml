@@ -25,17 +25,25 @@ parts:
     plugin: dump
     source: .
     organize:
-      fontrapak: bin/fontrapak  # Assuming your PyInstaller binary is named 'fontrapak' in the root
+      fontrapak: bin/fontrapak
     stage-packages:
       - libgl1
       - libegl1
-      - libxcb-cursor0
+      - libxcb-cursor0  # Add this explicitly
       - libxcb1
       - libxcb-render0
       - libxcb-shm0
       - libxcb-randr0
       - libxcb-xfixes0
       - libxkbcommon0
+      - libqt5gui5        # Often needed for Qt applications
+      - libqt5core5a      # Core Qt libraries
+      - libqt5widgets5    # If your application uses widgets
+      - libqt6gui6        # If your application uses Qt 6
+      - libqt6core6       # Core Qt 6 libraries
+      - libqt6widgets6    # If your application uses Qt 6 widgets
+      - libstdc++6        # Standard C++ library (often a dependency)
+
 
 icon: snap/gui/fontrapak.svg
 license: GPL-3.0+
