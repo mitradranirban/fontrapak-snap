@@ -55,7 +55,7 @@ plugs:
 apps:
   fontrapak:
     command: bin/fontrapak
-    extensions: [gnome]
+    #extensions: [gnome]
     environment:
       QT_QPA_PLATFORM: xcb # Required for Qt applications in a snap (PyInstaller often uses Qt)
       QT_QPA_PLATFORM_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/plugins/platforms:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt6/plugins/platforms # Explicitly set plugin path
