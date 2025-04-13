@@ -62,11 +62,11 @@ apps:
       - wayland # for wayland support
 
 # If you have any desktop integration files (.desktop, icons), add them here:
-install: |
-  mkdir -p $SNAPCRAFT_PART_INSTALL/share/applications
-  cp snap/gui/fontrapak.desktop $SNAPCRAFT_PART_INSTALL/share/applications/
-  mkdir -p $SNAPCRAFT_PART_INSTALL/share/icons/hicolor/scalable/apps
-  cp snap/gui/fontrapak.svg $SNAPCRAFT_PART_INSTALL/share/icons/hicolor/scalable/apps/
+#install: |
+#  mkdir -p $SNAPCRAFT_PART_INSTALL/share/applications
+#  cp snap/gui/fontrapak.desktop $SNAPCRAFT_PART_INSTALL/share/applications/
+# mkdir -p $SNAPCRAFT_PART_INSTALL/share/icons/hicolor/scalable/apps
+#  cp snap/gui/fontrapak.svg $SNAPCRAFT_PART_INSTALL/share/icons/hicolor/scalable/apps/
 
 build-packages:
 # - libgl1-mesa-dev # If you have openGL issues
@@ -115,4 +115,4 @@ build-packages:
 # - libxml2-dev
 # - libssl-dev
 # - libffi-dev
- - libpython3-dev # If you have python
+# - libpython3-dev # If you have python
