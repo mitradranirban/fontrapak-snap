@@ -34,7 +34,7 @@ parts:
 
   fontrapak:
     plugin: dump
-    source: https://fonts.atipra.in/fontrapak/fontrapak/fontrapak.tar.gz
+    source: https://fonts.atipra.in/fontrapak/fontrapak.tgz
     source-type: tar
     organize:
       fontrapak: bin/fontrapak
