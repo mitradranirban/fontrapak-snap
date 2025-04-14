@@ -95,14 +95,13 @@ plugs:
 
 apps:
   fontrapak:
-    command: desktop-launch bin/fontrapak
+    command:  bin/fontrapak
     environment:
       QT_QPA_PLATFORM: xcb # Required for Qt applications in a snap (PyInstaller often uses Qt)
       QT_QPA_PLATFORM_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/plugins/platforms:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt6/plugins/platforms # Explicitly set plugin path
       LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa # Include Mesa libraries if needed
     plugs:
       - x11
-      - unity7
       - opengl
       - network # if any network access is needed
       - home # if it needs access to user home directory
