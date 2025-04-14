@@ -57,7 +57,7 @@ parts:
           VERSION_FROM_FILE=$(cat version.txt | tr -d '\n')
           echo "Setting snap version to '$VERSION_FROM_FILE' from extracted version.txt"
           # Set the snap's overall version using snapcraftctl
-          craftctl set-version "$VERSION_FROM_FILE"
+          craftctl set version="$VERSION_FROM_FILE"
       else
           # Handle error: version.txt not found in archive
           echo "ERROR: version.txt not found within the extracted archive $ARCHIVE_FILE"
