@@ -1,10 +1,14 @@
 name: Update Version File
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: "22 1 * * 1-5"
+  workflow_dispatch: # allow manual trigger
+  # push:
+  #   branches: [ main ]
+  # pull_request:
+  #   branches: [ main ]
 
 jobs:
   update-version:

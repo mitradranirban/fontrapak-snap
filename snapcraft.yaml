@@ -2,7 +2,7 @@
 name: fontrapak
 title: Fontra Pak (Unofficial snap package)
 base: core22 # the base snap is the execution environment for this snap
-version: 'cat version.txt'
+version: unset
 summary: Browser-based variable-first font editor # 79 char long summary
 description: |
   Fontra is an open-source, browser-based, cross-platform, variable-first
@@ -20,6 +20,18 @@ architectures:
     build-for: amd64
 
 parts:
+  # --- Part specifically to read local version.txt and set the snap version ---
+  version-setter:
+    plugin: nil      # This part doesn't contribute files, only runs scripts
+    source: .        # Use local source directory to access version.txt
+    override-pull: |
+      # Read the version from the local version.txt file
+      # Use tr -d '\n' to remove any trailing newline
+      VERSION_FROM_FILE=$(cat $SNAPCRAFT_PART_SRC/version.txt | tr -d '\n')
+      # Use snapcraftctl to set the overall snap version
+      snapcraftctl set-version "$VERSION_FROM_FILE"
+  # ---------------------------------------------------------------------------
+
   fontrapak:
     plugin: dump
     source: https://fonts.atipra.in/fontrapak/fontrapak/fontrapak.tar.gz
