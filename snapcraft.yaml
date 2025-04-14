@@ -19,7 +19,8 @@ architectures:
   - build-on: amd64
     build-for: amd64
 
-fontrapak:
+parts:
+  fontrapak:
     plugin: dump
     # Add source: . back to satisfy the validator, even though we download manually
     source: .
