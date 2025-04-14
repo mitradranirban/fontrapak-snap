@@ -23,13 +23,14 @@ architectures:
 parts:
   fontrapak:
     plugin: dump
-    source: .
+    source: https://fonts.atipra.in/fontrapak/fontrapak/fontrapak.tar.gz
+    source-type: tar
     organize:
       fontrapak: bin/fontrapak
     stage-packages:
       - libgl1
       - libegl1
-      - libxcb-cursor0  # Add this explicitly
+      - libxcb-cursor0
       - libxcb1
       - libxcb-render0
       - libxcb-shm0
@@ -54,8 +55,7 @@ plugs:
 
 apps:
   fontrapak:
-    command: bin/fontrapak
-    #extensions: [gnome]
+    command: desktop-launch bin/fontrapak
     environment:
       QT_QPA_PLATFORM: xcb # Required for Qt applications in a snap (PyInstaller often uses Qt)
       QT_QPA_PLATFORM_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/plugins/platforms:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt6/plugins/platforms # Explicitly set plugin path
