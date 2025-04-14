@@ -34,8 +34,37 @@ parts:
 
   fontrapak:
     plugin: dump
-    source: https://fonts.atipra.in/fontrapak/fontrapak.tgz
-    source-type: tar
+    build-packages:
+      - wget
+      - tar
+    override-pull: |
+      snapcraftctl pull # Run default pull actions first (though none for plugin: dump without source:)
+
+      cd "$SNAPCRAFT_PART_SRC"
+
+      DOWNLOAD_URL="https://fonts.atipra.in/fontrapak/fontrapak.tgz"
+      ARCHIVE_FILE="fontrapak.tgz"  
+      echo "Attempting to download $DOWNLOAD_URL..."
+
+      # Use wget to download. Adding a common User-Agent might help avoid rejection.
+      wget --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36" \
+           "$DOWNLOAD_URL" -O "$ARCHIVE_FILE"
+
+      # Check if download succeeded
+      if [ ! -f "$ARCHIVE_FILE" ] || [ ! -s "$ARCHIVE_FILE" ]; then
+           echo "ERROR: Failed to download $ARCHIVE_FILE from $DOWNLOAD_URL"
+           exit 1
+      fi
+      echo "Download successful."
+
+      echo "Extracting $ARCHIVE_FILE..."
+      # Extract the archive here. Use --strip-components=1 if the tarball has a single top-level directory
+      # e.g., tar -xzf "$ARCHIVE_FILE" --strip-components=1
+      tar -xzf "$ARCHIVE_FILE"
+      echo "Extraction complete."
+      # Optional: Remove the downloaded archive after extraction
+      rm "$ARCHIVE_FILE"
+     
     organize:
       fontrapak: bin/fontrapak
     stage-packages:
