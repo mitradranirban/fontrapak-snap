@@ -19,38 +19,27 @@ architectures:
   - build-on: amd64
     build-for: amd64
 
-parts:
-  # --- Part specifically to read local version.txt and set the snap version ---
-  version-setter:
-    plugin: nil      # This part doesn't contribute files, only runs scripts
-    source: .        # Use local source directory to access version.txt
-    override-pull: |
-      # Read the version from the local version.txt file
-      # Use tr -d '\n' to remove any trailing newline
-      VERSION_FROM_FILE=$(cat $SNAPCRAFT_PART_SRC/version.txt | tr -d '\n')
-      # Use snapcraftctl to set the overall snap version
-      snapcraftctl set-version "$VERSION_FROM_FILE"
-  # ---------------------------------------------------------------------------
-
-  fontrapak:
+fontrapak:
     plugin: dump
+    # Add source: . back to satisfy the validator, even though we download manually
+    source: .
     build-packages:
       - wget
       - tar
     override-pull: |
-      snapcraftctl pull # Run default pull actions first (though none for plugin: dump without source:)
+      snapcraftctl pull # Run default pull actions first
 
+      # Change directory to where Snapcraft expects source for this part
       cd "$SNAPCRAFT_PART_SRC"
 
+      # !! Double-check this URL and Filename are correct !!
       DOWNLOAD_URL="https://fonts.atipra.in/fontrapak/fontrapak.tgz"
-      ARCHIVE_FILE="fontrapak.tgz"  
-      echo "Attempting to download $DOWNLOAD_URL..."
+      ARCHIVE_FILE="fontrapak.tgz"
 
-      # Use wget to download. Adding a common User-Agent might help avoid rejection.
+      echo "Attempting to download $DOWNLOAD_URL..."
       wget --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36" \
            "$DOWNLOAD_URL" -O "$ARCHIVE_FILE"
 
-      # Check if download succeeded
       if [ ! -f "$ARCHIVE_FILE" ] || [ ! -s "$ARCHIVE_FILE" ]; then
            echo "ERROR: Failed to download $ARCHIVE_FILE from $DOWNLOAD_URL"
            exit 1
@@ -58,15 +47,30 @@ parts:
       echo "Download successful."
 
       echo "Extracting $ARCHIVE_FILE..."
-      # Extract the archive here. Use --strip-components=1 if the tarball has a single top-level directory
-      # e.g., tar -xzf "$ARCHIVE_FILE" --strip-components=1
+      # Extracts fontrapak (binary) and version.txt into $SNAPCRAFT_PART_SRC
       tar -xzf "$ARCHIVE_FILE"
       echo "Extraction complete."
-      # Optional: Remove the downloaded archive after extraction
+
+      # --- Read version.txt FROM THE EXTRACTED FILES and set snap version ---
+      if [ -f "version.txt" ]; then
+          # Read version, removing potential trailing newline
+          VERSION_FROM_FILE=$(cat version.txt | tr -d '\n')
+          echo "Setting snap version to '$VERSION_FROM_FILE' from extracted version.txt"
+          # Set the snap's overall version using snapcraftctl
+          snapcraftctl set-version "$VERSION_FROM_FILE"
+      else
+          # Handle error: version.txt not found in archive
+          echo "ERROR: version.txt not found within the extracted archive $ARCHIVE_FILE"
+          exit 1 # Exit build if version file is mandatory
+      fi
+      # ---------------------------------------------------------------------
+
+      # Remove the archive after extraction and version setting
       rm "$ARCHIVE_FILE"
-     
+
+    # organize assumes 'fontrapak' binary is now at the root of $SNAPCRAFT_PART_SRC
     organize:
-      fontrapak: bin/fontrapak
+      fontrapak: bin/fontrapak # Moves the extracted binary to bin/fontrapak
     stage-packages:
       - libgl1
       - libegl1
@@ -77,13 +81,10 @@ parts:
       - libxcb-randr0
       - libxcb-xfixes0
       - libxkbcommon0
-      - libqt5gui5        # Often needed for Qt applications
-      - libqt5core5a      # Core Qt libraries
-      - libqt5widgets5    # If your application uses widgets
-      - libqt6gui6        # If your application uses Qt 6
-      - libqt6core6       # Core Qt 6 libraries
-      - libqt6widgets6    # If your application uses Qt 6 widgets
-      - libstdc++6        # Standard C++ library (often a dependency)
+      - libqt6gui6         
+      - libqt6core6        
+      - libqt6widgets6     
+      - libstdc++6         
 
 
 icon: snap/gui/fontrapak.svg
@@ -98,8 +99,8 @@ apps:
     command:  bin/fontrapak
     environment:
       QT_QPA_PLATFORM: xcb # Required for Qt applications in a snap (PyInstaller often uses Qt)
-      QT_QPA_PLATFORM_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/plugins/platforms:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt6/plugins/platforms # Explicitly set plugin path
-      LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa # Include Mesa libraries if needed
+      QT_QPA_PLATFORM_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt6/plugins/platforms  
+      LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa 
     plugs:
       - x11
       - opengl
