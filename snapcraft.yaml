@@ -47,6 +47,8 @@ parts:
       echo "Download successful."
 
       echo "Extracting $ARCHIVE_FILE..."
+      tar -xzf "$ARCHIVE_FILE"
+      echo "Extraction complete."
       
       # --- Read version.txt FROM THE EXTRACTED FILES and set snap version ---
       if [ -f "fontrapak/version.txt" ]; then
@@ -58,7 +60,7 @@ parts:
       else
           # Handle error: version.txt not found in archive
           echo "ERROR: fontrapak/version.txt not found within the extracted archive $ARCHIVE_FILE"
-          exit 1 # Exit build if version file is mandatory
+          craftctl set version="0.1dev"
       fi
       # ---------------------------------------------------------------------
 
@@ -95,15 +97,15 @@ apps:
   fontrapak:
     command:  bin/fontrapak
     environment:
-      QT_QPA_PLATFORM: xcb # Required for Qt applications in a snap (PyInstaller often uses Qt)
+      QT_QPA_PLATFORM: xcb  
       QT_QPA_PLATFORM_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt6/plugins/platforms  
       LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa 
     plugs:
       - x11
       - opengl
-      - network # if any network access is needed
-      - home # if it needs access to user home directory
-      - removable-media # if it needs access to removable media.
+      - network  
+      - home  
+      - removable-media  
       - desktop
       - desktop-legacy
-      - wayland # for wayland support
+      - wayland  
