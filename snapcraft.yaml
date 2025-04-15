@@ -32,7 +32,7 @@ parts:
       # Change directory to where Snapcraft expects source for this part
       cd "$SNAPCRAFT_PART_SRC"
 
-      # !! Double-check this URL and Filename are correct !!
+      
       DOWNLOAD_URL="https://fonts.atipra.in/fontrapak/fontrapak.tgz"
       ARCHIVE_FILE="fontrapak.tgz"
 
@@ -50,6 +50,18 @@ parts:
       # Extracts fontrapak (binary) and version.txt into $SNAPCRAFT_PART_SRC
       tar -xzf "$ARCHIVE_FILE"
       echo "Extraction complete."
+      echo "Setting execute permissions on fontrapak/fontrapak..."
+      if [ -f "fontrapak/fontrapak" ]; then
+           chmod +x fontrapak/fontrapak
+      else
+           echo "ERROR: Cannot set permissions, fontrapak/fontrapak not found after extraction."
+           exit 1
+      fi
+  # ----------------------------
+
+      echo "Contents after extraction and chmod ($PWD):"
+      ls -lR # List contents again to show new permissions
+
 
       # --- Read version.txt FROM THE EXTRACTED FILES and set snap version ---
       if [ -f "fontrapak/version.txt" ]; then
