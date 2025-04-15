@@ -52,7 +52,7 @@ parts:
       echo "Extraction complete."
 
       # --- Read version.txt FROM THE EXTRACTED FILES and set snap version ---
-      if [ -f "version.txt" ]; then
+      if [ -f "fontrapak/version.txt" ]; then
           # Read version, removing potential trailing newline
           VERSION_FROM_FILE=$(cat fontrapak/version.txt | tr -d '\n')
           echo "Setting snap version to '$VERSION_FROM_FILE' from extracted version.txt"
@@ -60,7 +60,7 @@ parts:
           craftctl set version="$VERSION_FROM_FILE"
       else
           # Handle error: version.txt not found in archive
-          echo "ERROR: version.txt not found within the extracted archive $ARCHIVE_FILE"
+          echo "ERROR: fontrapak/version.txt not found within the extracted archive $ARCHIVE_FILE"
           exit 1 # Exit build if version file is mandatory
       fi
       # ---------------------------------------------------------------------
