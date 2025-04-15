@@ -59,17 +59,22 @@ jobs:
       #       echo "previous_hash='none'" >> $GITHUB_OUTPUT
       #     fi
 
+      - name: Install and configure LXD
+        run: |
+          sudo snap install lxd
+          sudo lxd init --auto
+          sudo usermod -a -G lxd $USER
+          sudo chown root:lxd /var/lib/snapd/snap/lxd
+          newgrp lxd
+  
       - name: Build Snap (if changed)
         # Run if cache didn't hit (Method 1) OR if hashes differ (Method 2)
         if: steps.cache-hash.outputs.cache-hit != 'true'
         # if: steps.calculate_hash.outputs.hash != steps.get_prev_hash.outputs.previous_hash
         run: |
           echo "Source changed (or first run), building snap..."
-          # Install snapcraft and lxd (or use Docker)
+          # Install snapcraft 
           sudo snap install snapcraft --classic
-          sudo snap install lxd --channel=latest/stable
-          sudo lxd init --auto || true # Needs runner configuration for LXD
-          # Run the build (which downloads/extracts again internally via snapcraft.yaml)
           snapcraft --use-lxd
 
       - name: Upload to Snap Store Edge (if changed)
