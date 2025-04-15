@@ -1,49 +1,103 @@
-name: Update Version File
+name: Check Remote Source and Build Snap
 
 on:
   schedule:
-    # * is a special character in YAML so you have to quote this string
-    - cron: "22 1 * * 1-5"
-  workflow_dispatch: # allow manual trigger
-  # push:
-  #   branches: [ main ]
-  # pull_request:
-  #   branches: [ main ]
+    # Run every 6 hours (adjust cron schedule as needed)
+    - cron: '0 */12 * * *'
+  workflow_dispatch: # Allow manual triggering
 
 jobs:
-  update-version:
+  check-and-build:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Check out the repository
-      - name: Check out repository
-        uses: actions/checkout@v3
+      - name: Checkout Repository (for snapcraft.yaml)
+        uses: actions/checkout@v4
 
-      # Step 2: Set up Python
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Download Remote Archive
+        id: download
+        run: |
+          wget --user-agent="Mozilla/5.0" https://fonts.atipra.in/fontrapak/fontrapak.tgz -O fontrapak.tgz
+          if [ $? -ne 0 ]; then echo "Download failed"; exit 1; fi
+          echo "Download successful"
+
+      - name: Extract Key Files
+        id: extract
+        run: |
+          mkdir extracted_files
+          tar -xzf fontrapak.tgz -C extracted_files fontrapak/fontrapak fontrapak/version.txt
+          if [ $? -ne 0 ]; then echo "Extraction failed"; exit 1; fi
+          echo "Extraction successful"
+          # Check if files exist
+          if [ ! -f "extracted_files/fontrapak/fontrapak" ] || [ ! -f "extracted_files/fontrapak/version.txt" ]; then
+            echo "ERROR: Expected files not found after extraction."
+            exit 1
+          fi
+
+      - name: Calculate Current Hash
+        id: calculate_hash
+        run: |
+          # Calculate hash of both files, then hash the result for a single signature
+          CURRENT_HASH=$(sha256sum extracted_files/fontrapak/fontrapak extracted_files/fontrapak/version.txt | sha256sum | cut -d' ' -f1)
+          echo "Current Hash: $CURRENT_HASH"
+          echo "hash=$CURRENT_HASH" >> $GITHUB_OUTPUT
+
+      # --- Method 1: Using Cache to store/compare hash ---
+      - name: Restore Previous Hash (Cache)
+        id: cache-hash
+        uses: actions/cache/restore@v4
         with:
-          python-version: '3.x'
+          path: ~/cache-dummy-dir # Cache needs a path, even if empty
+          key: remote-source-hash-${{ steps.calculate_hash.outputs.hash }}
 
-      # Step 3: Install the package (editable mode if needed)
-      - name: Install the package
-        run: |
-          python -m pip install --upgrade pip
-          pip install git+https://github.com/googlefonts/fontra.git
+      # --- Method 2: Using file in repo (Alternative to Cache) ---
+      # - name: Get Previous Hash (File)
+      #   id: get_prev_hash
+      #   run: |
+      #     if [ -f remote_source.sha256 ]; then
+      #       echo "previous_hash=$(cat remote_source.sha256)" >> $GITHUB_OUTPUT
+      #     else
+      #       echo "previous_hash='none'" >> $GITHUB_OUTPUT
+      #     fi
 
-      # Step 4: Query the __version__ string
-      - name: Query __version__ string
-        id: query-version
+      - name: Build Snap (if changed)
+        # Run if cache didn't hit (Method 1) OR if hashes differ (Method 2)
+        if: steps.cache-hash.outputs.cache-hit != 'true'
+        # if: steps.calculate_hash.outputs.hash != steps.get_prev_hash.outputs.previous_hash
         run: |
-          echo $(python -c "import fontra; print(fontra.__version__)") > version.txt
+          echo "Source changed (or first run), building snap..."
+          # Install snapcraft and lxd (or use Docker)
+          sudo snap install snapcraft --classic
+          sudo snap install lxd --channel=latest/stable
+          sudo lxd init --auto || true # Needs runner configuration for LXD
+          # Run the build (which downloads/extracts again internally via snapcraft.yaml)
+          snapcraft --use-lxd
 
-      # Step 5: Commit and push version.txt to the repository
-      - name: Commit and push changes
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add version.txt
-          git commit -m "Update version.txt with the current version of fontra"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload to Snap Store Edge (if changed)
+        # Run if cache didn't hit (Method 1) OR if hashes differ (Method 2)
+        if: steps.cache-hash.outputs.cache-hit != 'true'
+        # if: steps.calculate_hash.outputs.hash != steps.get_prev_hash.outputs.previous_hash
+        uses: snapcore/action-publish@v1
+        with:
+          store_login: ${{ secrets.SNAP_STORE_LOGIN }} # Store credentials securely
+          snap: "*.snap" # Upload the built snap file
+          release: edge # Release to edge channel
+
+      - name: Save Current Hash (Cache - Implicit)
+        # Run if cache didn't hit (Method 1)
+        if: steps.cache-hash.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/cache-dummy-dir
+          key: remote-source-hash-${{ steps.calculate_hash.outputs.hash }}
+
+      # - name: Update Hash File (Method 2)
+      #   if: steps.calculate_hash.outputs.hash != steps.get_prev_hash.outputs.previous_hash
+      #   run: |
+      #     echo "Updating hash file..."
+      #     echo "${{ steps.calculate_hash.outputs.hash }}" > remote_source.sha256
+      #     # Commit and push the updated hash file
+      #     git config user.name github-actions
+      #     git config user.email github-actions@github.com
+      #     git add remote_source.sha256
+      #     git commit -m "chore: Update remote source hash"
+      #     git push
