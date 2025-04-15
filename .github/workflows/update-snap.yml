@@ -58,14 +58,26 @@ jobs:
       #     else
       #       echo "previous_hash='none'" >> $GITHUB_OUTPUT
       #     fi
-
       - name: Install and configure LXD
         run: |
           sudo snap install lxd
+          # Wait for snap service to be fully available
+          sleep 10
           sudo lxd init --auto
+          
+          # Add current user to lxd group - in Actions runner context
           sudo usermod -a -G lxd $USER
-          sudo chown root:lxd /var/lib/snapd/snap/lxd
+          
+          # Don't try to modify the snap directory directly
+          # Instead, verify the installation
+          sudo snap list lxd
+          
+          # Refresh group membership
           newgrp lxd
+          
+          # Verify LXD is working
+          lxc --version
+          sudo lxc list
   
       - name: Build Snap (if changed)
         # Run if cache didn't hit (Method 1) OR if hashes differ (Method 2)
