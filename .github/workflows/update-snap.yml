@@ -16,7 +16,7 @@ jobs:
       - name: Download Remote Archive
         id: download
         run: |
-          wget --user-agent="Mozilla/5.0" https://fonts.atipra.in/fontrapak/fontrapak.tgz -O fontrapak.tgz
+          wget --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36" https://fonts.atipra.in/fontrapak/fontrapak.tgz -O fontrapak.tgz
           if [ $? -ne 0 ]; then echo "Download failed"; exit 1; fi
           echo "Download successful"
 
