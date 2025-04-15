@@ -70,7 +70,7 @@ parts:
 
     # organize assumes 'fontrapak' binary is now at the root of $SNAPCRAFT_PART_SRC
     organize:
-      fontrapak: bin/fontrapak # Moves the extracted binary to bin/fontrapak
+      fontrapak/fontrapak: bin/fontrapak # Moves the extracted binary to bin/fontrapak
     stage-packages:
       - libgl1
       - libegl1
