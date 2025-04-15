@@ -72,11 +72,8 @@ jobs:
           # Instead, verify the installation
           sudo snap list lxd
           
-          # Refresh group membership
-          newgrp lxd
-          
           # Verify LXD is working
-          lxc --version
+          sudo lxc --version
           sudo lxc list
   
       - name: Build Snap (if changed)
@@ -87,7 +84,7 @@ jobs:
           echo "Source changed (or first run), building snap..."
           # Install snapcraft 
           sudo snap install snapcraft --classic
-          snapcraft --use-lxd
+          sudo snapcraft --use-lxd
 
       - name: Upload to Snap Store Edge (if changed)
         # Run if cache didn't hit (Method 1) OR if hashes differ (Method 2)
