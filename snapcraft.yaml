@@ -67,7 +67,7 @@ parts:
       # Remove the archive after extraction and version setting
       rm "$ARCHIVE_FILE"
 
-    # organize assumes 'fontrapak' binary is now at the root of $SNAPCRAFT_PART_SRC
+     
     organize:
       fontrapak/fontrapak: bin/fontrapak # Moves the extracted binary to bin/fontrapak
     stage-packages:
@@ -83,7 +83,8 @@ parts:
       - libqt6gui6         
       - libqt6core6        
       - libqt6widgets6     
-      - libstdc++6         
+      - libstdc++6
+      - qt6-qpa-plugins    
 
 
 icon: snap/gui/fontrapak.svg
