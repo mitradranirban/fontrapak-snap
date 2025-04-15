@@ -54,7 +54,7 @@ parts:
       # --- Read version.txt FROM THE EXTRACTED FILES and set snap version ---
       if [ -f "version.txt" ]; then
           # Read version, removing potential trailing newline
-          VERSION_FROM_FILE=$(cat version.txt | tr -d '\n')
+          VERSION_FROM_FILE=$(cat fontrapak/version.txt | tr -d '\n')
           echo "Setting snap version to '$VERSION_FROM_FILE' from extracted version.txt"
           # Set the snap's overall version using snapcraftctl
           craftctl set version="$VERSION_FROM_FILE"
