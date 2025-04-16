@@ -1,0 +1,56 @@
+name: Update Version File
+
+on:
+  schedule:
+    - cron: '0 */12 * * *' # Runs every 12 hours
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Download the remote version.txt
+      - name: Download Remote Version File
+        id: download_version
+        run: |
+          wget --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36" \
+            https://fonts.atipra.in/fontrapak/version.txt -O remote_version.txt
+          echo "Downloaded remote version.txt"
+
+      # Step 3: Compare the files
+      - name: Compare Version Files
+        id: compare_versions
+        run: |
+          if cmp -s remote_version.txt version.txt; then
+            echo "Files are identical. Exiting."
+            echo "identical=true" >> $GITHUB_OUTPUT
+          else
+            echo "Files differ. Proceeding to update."
+            echo "identical=false" >> $GITHUB_OUTPUT
+        continue-on-error: false
+
+      # Step 4: Exit if files are identical
+      - name: Exit if Identical
+        if: steps.compare_versions.outputs.identical == 'true'
+        run: exit 0
+
+      # Step 5: Replace the existing version.txt with the downloaded file
+      - name: Update Local Version File
+        run: |
+          mv remote_version.txt version.txt
+          echo "Updated local version.txt with the downloaded file."
+
+      # Step 6: Commit the changes
+      - name: Commit Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add version.txt
+          COMMIT_MESSAGE=$(cat version.txt)
+          git commit -m "$COMMIT_MESSAGE"
+          git push
