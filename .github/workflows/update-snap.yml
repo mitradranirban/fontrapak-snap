@@ -9,13 +9,8 @@ on:
 jobs:
   check-and-build:
     runs-on: ubuntu-latest # Update this to 'self-hosted' if using a self-hosted runner
-    
-#    steps:
-#      - name: Check Internet Connectivity
-#        run: |
-#          echo "Checking internet connectivity..."
-#          ping -c 4 google.com || (echo "No internet connection. Exiting." && exit 1)
 
+    steps:
       - name: Checkout Repository (for snapcraft.yaml)
         uses: actions/checkout@v4
 
@@ -45,7 +40,6 @@ jobs:
           echo "Current Hash: $CURRENT_HASH"
           echo "hash=$CURRENT_HASH" >> $GITHUB_OUTPUT
 
-      # --- Method 1: Using Cache to store/compare hash ---
       - name: Restore Previous Hash (Cache)
         id: cache-hash
         uses: actions/cache/restore@v4
@@ -53,37 +47,20 @@ jobs:
           path: ~/cache-dummy-dir # Cache needs a path, even if empty
           key: remote-source-hash-${{ steps.calculate_hash.outputs.hash }}
 
-      # --- Method 2: Using file in repo (Alternative to Cache) ---
-      # - name: Get Previous Hash (File)
-      #   id: get_prev_hash
-      #   run: |
-      #     if [ -f remote_source.sha256 ]; then
-      #       echo "previous_hash=$(cat remote_source.sha256)" >> $GITHUB_OUTPUT
-      #     else
-      #       echo "previous_hash='none'" >> $GITHUB_OUTPUT
-      #     fi
       - name: Install and configure LXD
         run: |
           sudo snap install lxd
           # Wait for snap service to be fully available
           sleep 10
           sudo lxd init --auto
-          
           # Add current user to lxd group - in Actions runner context
           sudo usermod -a -G lxd $USER
-          
-          # Don't try to modify the snap directory directly
-          # Instead, verify the installation
-          sudo snap list lxd
-          
           # Verify LXD is working
           sudo lxc --version
           sudo lxc list
-  
+
       - name: Build Snap (if changed)
-        # Run if cache didn't hit (Method 1) OR if hashes differ (Method 2)
         if: steps.cache-hash.outputs.cache-hit != 'true'
-        # if: steps.calculate_hash.outputs.hash != steps.get_prev_hash.outputs.previous_hash
         run: |
           echo "Source changed (or first run), building snap..."
           # Install snapcraft 
@@ -91,9 +68,7 @@ jobs:
           sudo snapcraft --use-lxd
 
       - name: Upload to Snap Store Edge (if changed)
-        # Run if cache didn't hit (Method 1) OR if hashes differ (Method 2)
         if: steps.cache-hash.outputs.cache-hit != 'true'
-        # if: steps.calculate_hash.outputs.hash != steps.get_prev_hash.outputs.previous_hash
         uses: snapcore/action-publish@v1
         with:
           store_login: ${{ secrets.SNAP_STORE_LOGIN }} # Store credentials securely
@@ -101,21 +76,8 @@ jobs:
           release: edge # Release to edge channel
 
       - name: Save Current Hash (Cache - Implicit)
-        # Run if cache didn't hit (Method 1)
         if: steps.cache-hash.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: ~/cache-dummy-dir
           key: remote-source-hash-${{ steps.calculate_hash.outputs.hash }}
-
-      # - name: Update Hash File (Method 2)
-      #   if: steps.calculate_hash.outputs.hash != steps.get_prev_hash.outputs.previous_hash
-      #   run: |
-      #     echo "Updating hash file..."
-      #     echo "${{ steps.calculate_hash.outputs.hash }}" > remote_source.sha256
-      #     # Commit and push the updated hash file
-      #     git config user.name github-actions
-      #     git config user.email github-actions@github.com
-      #     git add remote_source.sha256
-      #     git commit -m "chore: Update remote source hash"
-      #     git push
