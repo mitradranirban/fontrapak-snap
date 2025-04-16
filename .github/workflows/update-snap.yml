@@ -29,6 +29,8 @@ jobs:
           echo "Extraction successful"
           if [ ! -f "extracted_files/fontrapak/fontrapak" ] || [ ! -f "extracted_files/fontrapak/version.txt" ]; then
             echo "ERROR: Expected files not found after extraction."
+            echo "Verify the archive structure and update the extraction path."
+            ls -R extracted_files # Debugging: List extracted files
             exit 1
           fi
 
@@ -46,18 +48,31 @@ jobs:
         with:
           path: ~/cache-dummy-dir # Cache needs a path, even if empty
           key: remote-source-hash-${{ steps.calculate_hash.outputs.hash }}
+      - name: Configure iptables for LXD and Docker compatibility
+        run: |
+          # Allow forwarding for the Docker bridge
+          sudo iptables -I FORWARD -i docker0 -o lxdbr0 -j ACCEPT
+          sudo iptables -I FORWARD -i lxdbr0 -o docker0 -j ACCEPT
+          # Save the iptables rules
+          sudo apt-get install -y iptables-persistent
+          sudo netfilter-persistent save
 
       - name: Install and configure LXD
         run: |
           sudo snap install lxd
-          # Wait for snap service to be fully available
           sleep 10
           sudo lxd init --auto
-          # Add current user to lxd group - in Actions runner context
+          sudo lxc network create lxdbr0
+          sudo lxc network attach-profile lxdbr0 default eth0
+          sudo lxc network set lxdbr0 ipv4.address auto
+          sudo lxc network set lxdbr0 ipv6.address none
           sudo usermod -a -G lxd $USER
-          # Verify LXD is working
-          sudo lxc --version
-          sudo lxc list
+          sudo lxc network list # Debugging: List configured networks
+          sudo lxc list # Verify connectivity
+      # Add a network check before building the Snap
+      - name: Verify Internet Connectivity
+        run: |
+          ping -c 3 google.com || { echo "No internet connection. Exiting."; exit 1; }
 
       - name: Build Snap (if changed)
         if: steps.cache-hash.outputs.cache-hit != 'true'
@@ -65,8 +80,9 @@ jobs:
           echo "Source changed (or first run), building snap..."
           # Install snapcraft 
           sudo snap install snapcraft --classic
-          sudo snapcraft --use-lxd
-
+          for i in {1..3}; do
+            sudo snapcraft --use-lxd && break || echo "Retry $i/3 failed. Retrying..." && sleep 10;
+          done	
       - name: Upload to Snap Store Edge (if changed)
         if: steps.cache-hash.outputs.cache-hit != 'true'
         uses: snapcore/action-publish@v1
