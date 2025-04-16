@@ -14,25 +14,12 @@ jobs:
       - name: Checkout Repository (for snapcraft.yaml)
         uses: actions/checkout@v4
 
-      - name: Download Remote AVersion
+      - name: Download Remote Version File
         id: download
         run: |
           wget --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36" https://fonts.atipra.in/fontrapak/fontrapak/version.txt -O version.txt
           if [ $? -ne 0 ]; then echo "Download failed"; exit 1; fi
           echo "Download successful"
-
-      #- name: Ensure Required Files Exist After Extraction
-        #run: |
-          #mkdir extracted_files
-          #tar -xzf fontrapak.tgz -C extracted_files fontrapak/fontrapak fontrapak/version.txt
-          #if [ $? -ne 0 ]; then echo "Extraction failed"; exit 1; fi
-          #echo "Extraction successful"
-          #if [ ! -f "extracted_files/fontrapak/fontrapak" ] || [ ! -f "extracted_files/fontrapak/version.txt" ]; then
-            #echo "ERROR: Expected files not found after extraction."
-            #echo "Verify the archive structure and update the extraction path."
-            #ls -R extracted_files # Debugging: List extracted files
-            #exit 1
-          #fi
 
       - name: Calculate Current Hash
         id: calculate_hash
@@ -80,9 +67,9 @@ jobs:
           sudo apt-get install -y iptables-persistent
           sudo netfilter-persistent save
       # Add a network check before building the Snap
-      - name: Verify Internet Connectivity
-        run: |
-          ping -c 3 google.com || { echo "No internet connection. Exiting."; exit 1; }
+      #- name: Verify Internet Connectivity
+        #run: |
+          #ping -c 3 google.com || { echo "No internet connection. Exiting."; exit 1; }
 
       - name: Build Snap (if changed)
         if: steps.cache-hash.outputs.cache-hit != 'true'
