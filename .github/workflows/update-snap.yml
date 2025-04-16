@@ -48,14 +48,6 @@ jobs:
         with:
           path: ~/cache-dummy-dir # Cache needs a path, even if empty
           key: remote-source-hash-${{ steps.calculate_hash.outputs.hash }}
-      - name: Configure iptables for LXD and Docker compatibility
-        run: |
-          # Allow forwarding for the Docker bridge
-          sudo iptables -I FORWARD -i docker0 -o lxdbr0 -j ACCEPT
-          sudo iptables -I FORWARD -i lxdbr0 -o docker0 -j ACCEPT
-          # Save the iptables rules
-          sudo apt-get install -y iptables-persistent
-          sudo netfilter-persistent save
 
       - name: Install and configure LXD
         run: |
