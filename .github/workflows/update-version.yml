@@ -32,6 +32,7 @@ jobs:
           else
             echo "Files differ. Proceeding to update."
             echo "identical=false" >> $GITHUB_OUTPUT
+          fi
         continue-on-error: false
 
       # Step 4: Exit if files are identical
