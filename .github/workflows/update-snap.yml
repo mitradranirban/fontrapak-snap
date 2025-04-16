@@ -1,5 +1,4 @@
 name: Check Remote Source and Build Snap
-name: Check Remote Source and Build Snap
 
 on:
   schedule:
@@ -11,11 +10,11 @@ jobs:
   check-and-build:
     runs-on: ubuntu-latest # Update this to 'self-hosted' if using a self-hosted runner
     
-    steps:
-      - name: Check Internet Connectivity
-        run: |
-          echo "Checking internet connectivity..."
-          ping -c 4 google.com || (echo "No internet connection. Exiting." && exit 1)
+#    steps:
+#      - name: Check Internet Connectivity
+#        run: |
+#          echo "Checking internet connectivity..."
+#          ping -c 4 google.com || (echo "No internet connection. Exiting." && exit 1)
 
       - name: Checkout Repository (for snapcraft.yaml)
         uses: actions/checkout@v4
