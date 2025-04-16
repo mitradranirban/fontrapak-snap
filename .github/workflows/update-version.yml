@@ -19,7 +19,7 @@ jobs:
         id: download_version
         run: |
           wget --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36" \
-            https://fonts.atipra.in/fontrapak/version.txt -O remote_version.txt
+            https://fonts.atipra.in/fontrapak/fontrapak/version.txt -O remote_version.txt
           echo "Downloaded remote version.txt"
 
       # Step 3: Compare the files
