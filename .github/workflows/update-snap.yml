@@ -14,31 +14,31 @@ jobs:
       - name: Checkout Repository (for snapcraft.yaml)
         uses: actions/checkout@v4
 
-      - name: Download Remote Archive
+      - name: Download Remote AVersion
         id: download
         run: |
-          wget --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36" https://fonts.atipra.in/fontrapak/fontrapak.tgz -O fontrapak.tgz
+          wget --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36" https://fonts.atipra.in/fontrapak/fontrapak/version.txt -O version.txt
           if [ $? -ne 0 ]; then echo "Download failed"; exit 1; fi
           echo "Download successful"
 
-      - name: Ensure Required Files Exist After Extraction
-        run: |
-          mkdir extracted_files
-          tar -xzf fontrapak.tgz -C extracted_files fontrapak/fontrapak fontrapak/version.txt
-          if [ $? -ne 0 ]; then echo "Extraction failed"; exit 1; fi
-          echo "Extraction successful"
-          if [ ! -f "extracted_files/fontrapak/fontrapak" ] || [ ! -f "extracted_files/fontrapak/version.txt" ]; then
-            echo "ERROR: Expected files not found after extraction."
-            echo "Verify the archive structure and update the extraction path."
-            ls -R extracted_files # Debugging: List extracted files
-            exit 1
-          fi
+      #- name: Ensure Required Files Exist After Extraction
+        #run: |
+          #mkdir extracted_files
+          #tar -xzf fontrapak.tgz -C extracted_files fontrapak/fontrapak fontrapak/version.txt
+          #if [ $? -ne 0 ]; then echo "Extraction failed"; exit 1; fi
+          #echo "Extraction successful"
+          #if [ ! -f "extracted_files/fontrapak/fontrapak" ] || [ ! -f "extracted_files/fontrapak/version.txt" ]; then
+            #echo "ERROR: Expected files not found after extraction."
+            #echo "Verify the archive structure and update the extraction path."
+            #ls -R extracted_files # Debugging: List extracted files
+            #exit 1
+          #fi
 
       - name: Calculate Current Hash
         id: calculate_hash
         run: |
           # Calculate hash of both files, then hash the result for a single signature
-          CURRENT_HASH=$(sha256sum extracted_files/fontrapak/fontrapak extracted_files/fontrapak/version.txt | sha256sum | cut -d' ' -f1)
+          CURRENT_HASH=$(sha256sum  version.txt | sha256sum | cut -d' ' -f1)
           echo "Current Hash: $CURRENT_HASH"
           echo "hash=$CURRENT_HASH" >> $GITHUB_OUTPUT
 
@@ -69,6 +69,14 @@ jobs:
           sudo usermod -a -G lxd $USER
           sudo lxc network list # Debugging: List configured networks
           sudo lxc list # Verify connectivity
+      - name: Configure iptables for LXD and Docker compatibility
+        run: |
+          # Allow forwarding for the Docker bridge
+          sudo iptables -I FORWARD -i docker0 -o lxdbr0 -j ACCEPT
+          sudo iptables -I FORWARD -i lxdbr0 -o docker0 -j ACCEPT
+          # Save the iptables rules
+          sudo apt-get install -y iptables-persistent
+          sudo netfilter-persistent save
       # Add a network check before building the Snap
       - name: Verify Internet Connectivity
         run: |
