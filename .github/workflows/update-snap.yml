@@ -62,7 +62,12 @@ jobs:
           sudo snap install lxd
           sleep 10
           sudo lxd init --auto
-          sudo lxc network create lxdbr0
+          if sudo lxc network show lxdbr0 > /dev/null 2>&1; then
+            echo "Network lxdbr0 already exists. Skipping creation."
+          else
+            echo "Creating lxdbr0 network..."
+            sudo lxc network create lxdbr0
+          fi
           sudo lxc network attach-profile lxdbr0 default eth0
           sudo lxc network set lxdbr0 ipv4.address auto
           sudo lxc network set lxdbr0 ipv6.address none
