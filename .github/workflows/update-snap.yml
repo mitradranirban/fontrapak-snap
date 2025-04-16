@@ -60,7 +60,12 @@ jobs:
             echo "Creating lxdbr0 network..."
             sudo lxc network create lxdbr0
           fi
-          sudo lxc network attach-profile lxdbr0 default eth0
+          if sudo lxc profile show default | grep -q "eth0"; then
+            echo "Device eth0 already exists in the default profile. Skipping attachment."
+          else
+            echo "Attaching eth0 to lxdbr0 network..."
+            sudo lxc network attach-profile lxdbr0 default eth0
+          fi
           sudo lxc network set lxdbr0 ipv4.address auto
           sudo lxc network set lxdbr0 ipv6.address none
           sudo usermod -a -G lxd $USER
