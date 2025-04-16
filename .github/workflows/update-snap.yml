@@ -1,15 +1,22 @@
 name: Check Remote Source and Build Snap
+name: Check Remote Source and Build Snap
 
 on:
   schedule:
-    # Run every 6 hours (adjust cron schedule as needed)
+    # Run every 12 hours (adjust cron schedule as needed)
     - cron: '0 */12 * * *'
   workflow_dispatch: # Allow manual triggering
 
 jobs:
   check-and-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Update this to 'self-hosted' if using a self-hosted runner
+    
     steps:
+      - name: Check Internet Connectivity
+        run: |
+          echo "Checking internet connectivity..."
+          ping -c 4 google.com || (echo "No internet connection. Exiting." && exit 1)
+
       - name: Checkout Repository (for snapcraft.yaml)
         uses: actions/checkout@v4
 
@@ -20,14 +27,12 @@ jobs:
           if [ $? -ne 0 ]; then echo "Download failed"; exit 1; fi
           echo "Download successful"
 
-      - name: Extract Key Files
-        id: extract
+      - name: Ensure Required Files Exist After Extraction
         run: |
           mkdir extracted_files
           tar -xzf fontrapak.tgz -C extracted_files fontrapak/fontrapak fontrapak/version.txt
           if [ $? -ne 0 ]; then echo "Extraction failed"; exit 1; fi
           echo "Extraction successful"
-          # Check if files exist
           if [ ! -f "extracted_files/fontrapak/fontrapak" ] || [ ! -f "extracted_files/fontrapak/version.txt" ]; then
             echo "ERROR: Expected files not found after extraction."
             exit 1
