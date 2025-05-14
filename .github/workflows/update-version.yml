@@ -2,7 +2,7 @@ name: Update Version File
 
 on:
   schedule:
-    - cron: '0 */12 * * *' # Runs every 12 hours
+    - cron: '0 */24 * * *' # Runs every 24 hours
   workflow_dispatch: # Allows manual trigger
 
 jobs:
