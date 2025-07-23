@@ -1,4 +1,4 @@
-# Fontra Pak for Linux Desktops 
+# Fontra Pak Snap for Linux Desktops 
 [![fontrapak](https://snapcraft.io/fontrapak/badge.svg)](https://snapcraft.io/fontrapak)
 
 [Fontra](http://fontra.xyz/) is an open-source, browser-based, cross-platform, variable-first font editor.

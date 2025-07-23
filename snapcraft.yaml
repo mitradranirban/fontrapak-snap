@@ -1,7 +1,7 @@
 
 name: fontrapak
 title: Fontra Pak (Unofficial snap package)
-base: core24 # the base snap is the execution environment for this snap
+base: core22 # the base snap is the execution environment for this snap
 summary: Browser-based variable-first font editor # 79 char long summary
 description: |
   Fontra is an open-source, browser-based, cross-platform, variable-first
@@ -14,11 +14,9 @@ description: |
 grade: stable
 confinement: strict
 adopt-info: fontrapak
-platforms:
-  amd64:
-    build-on: [amd64]
-    build-for: [amd64]
-
+architectures:
+  - build-on: amd64
+    build-for: amd64
 parts:
   fontrapak:
     plugin: dump
