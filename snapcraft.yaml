@@ -96,7 +96,6 @@ plugs:
 apps:
   fontrapak:
     command:  bin/fontrapak
-    desktop: fontrapak.desktop
     environment:
       QT_QPA_PLATFORM: xcb  
       QT_QPA_PLATFORM_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt6/plugins/platforms  
