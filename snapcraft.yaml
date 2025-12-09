@@ -1,74 +1,53 @@
-
 name: fontrapak
 title: Fontra Pak (Unofficial snap package)
-base: core22 # the base snap is the execution environment for this snap
-summary: Browser-based variable-first font editor # 79 char long summary
+base: core22
+summary: Browser-based variable-first font editor
 description: |
   Fontra is an open-source, browser-based, cross-platform, variable-first
   font editor. Fontra extends the boundaries of what current font editors
   can do. Originally developed to make the design and production of large
   CJK fonts more efficient, Fontra provides deeper integration of
-  variable font technology and improved    usability of variable
+  variable font technology and improved usability of variable
   components as design elements.
 
 grade: stable
 confinement: strict
 adopt-info: fontrapak
+
 architectures:
   - build-on: amd64
     build-for: amd64
+
 parts:
   fontrapak:
     plugin: dump
-    # Add source: . back to satisfy the validator, even though we download manually
-    source: .
+    # Snapcraft will download this automatically with network access
+    source: https://github.com/fontra/fontra-pak/releases/latest/download/FontraPakUbuntu.tgz
+    source-type: tar
     build-packages:
-      - wget
-      - tar
+      - curl
+      - jq
     override-pull: |
-      snapcraftctl pull # Run default pull actions first
-
-      # Change directory to where Snapcraft expects source for this part
-      cd "$SNAPCRAFT_PART_SRC"
-
+      # First, let snapcraft download the source using its built-in mechanism
+      snapcraftctl pull
       
-      DOWNLOAD_URL="https://github.com/mitradranirban/fontra-pak-linux/releases/latest/download/fontrapak.tgz"
-      ARCHIVE_FILE="fontrapak.tgz"
-
-      echo "Attempting to download $DOWNLOAD_URL..."
-      wget --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36" \
-           "$DOWNLOAD_URL" -O "$ARCHIVE_FILE"
-
-      if [ ! -f "$ARCHIVE_FILE" ] || [ ! -s "$ARCHIVE_FILE" ]; then
-           echo "ERROR: Failed to download $ARCHIVE_FILE from $DOWNLOAD_URL"
-           exit 1
-      fi
-      echo "Download successful."
-
-      echo "Extracting $ARCHIVE_FILE..."
-      tar -xzf "$ARCHIVE_FILE"
-      echo "Extraction complete."
+      # Fetch version from GitHub API
+      echo "Fetching latest release tag from fontra/fontra-pak..."
+      LATEST_TAG=$(curl -s https://api.github.com/repos/fontra/fontra-pak/releases/latest | jq -r '.tag_name')
       
-      # --- Read version.txt FROM THE EXTRACTED FILES and set snap version ---
-      if [ -f "fontrapak/version.txt" ]; then
-          # Read version, removing potential trailing newline
-          VERSION_FROM_FILE=$(cat fontrapak/version.txt | tr -d '\n')
-          echo "Setting snap version to '$VERSION_FROM_FILE' from extracted version.txt"
-          # Set the snap's overall version using snapcraftctl
-          craftctl set version="$VERSION_FROM_FILE"
+      if [ "$LATEST_TAG" = "null" ] || [ -z "$LATEST_TAG" ]; then
+        echo "ERROR: Failed to fetch latest release tag"
+        craftctl set version="0.0.1+unknown"
       else
-          # Handle error: version.txt not found in archive
-          echo "ERROR: fontrapak/version.txt not found within the extracted archive $ARCHIVE_FILE"
-          craftctl set version="0.1dev"
+        # Remove 'v' prefix if present
+        VERSION="${LATEST_TAG#v}"
+        echo "Setting snap version to '$VERSION'"
+        craftctl set version="$VERSION"
       fi
-      # ---------------------------------------------------------------------
-
-      # Remove the archive after extraction and version setting
-      rm "$ARCHIVE_FILE"
-
-     
+      
     organize:
-      fontrapak/fontrapak: bin/fontrapak # Moves the extracted binary to bin/fontrapak
+      fontrapak/fontrapak: bin/fontrapak
+      
     stage-packages:
       - libgl1
       - libegl1
@@ -80,12 +59,11 @@ parts:
       - libxcb-randr0
       - libxcb-xfixes0
       - libxkbcommon0
-      - libqt6gui6         
-      - libqt6core6        
-      - libqt6widgets6     
+      - libqt6gui6
+      - libqt6core6
+      - libqt6widgets6
       - libstdc++6
-      - qt6-qpa-plugins    
-
+      - qt6-qpa-plugins
 
 icon: snap/gui/fontrapak.svg
 license: GPL-3.0+
@@ -96,18 +74,18 @@ plugs:
 
 apps:
   fontrapak:
-    command:  bin/fontrapak
+    command: bin/fontrapak
     desktop: snap/gui/fontrapak.desktop
     environment:
-      QT_QPA_PLATFORM: xcb  
-      QT_QPA_PLATFORM_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt6/plugins/platforms  
+      QT_QPA_PLATFORM: xcb
+      QT_QPA_PLATFORM_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt6/plugins/platforms
       LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa:$SNAP/lib/$SNAPCRAFT_ARCH_TRIPLET
     plugs:
       - x11
       - opengl
-      - network  
-      - home  
-      - removable-media  
+      - network
+      - home
+      - removable-media
       - desktop
       - desktop-legacy
-      - wayland  
+      - wayland
