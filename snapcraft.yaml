@@ -10,7 +10,7 @@ description: |
   variable font technology and improved usability of variable
   components as design elements.
 
-# Metadata fields to suppress linter warnings
+# Metadata fields 
 website:
   - https://fontra.xyz
   - https://docs.fontra.xyz
@@ -21,6 +21,7 @@ source-code:
 
 issues:
   - https://github.com/fontra/fontra-pak/issues
+  - https://github.com/mitradranirban/fontrapak-snap/issues
 
 contact:
   - https://fontra.xyz
@@ -83,9 +84,16 @@ parts:
       tar -xzf "$ARCHIVE_FILE"
       echo "Extraction complete."
       
-      # List contents to verify structure
-      echo "Archive contents:"
-      ls -la
+      # Set executable permissions on the binary (file is at root level)
+      if [ -f "fontrapak" ]; then
+        echo "Setting executable permissions on fontrapak binary..."
+        chmod +x fontrapak
+      else
+        echo "ERROR: fontrapak binary not found after extraction"
+        echo "Contents of current directory:"
+        ls -la
+        exit 1
+      fi
       
       # Remove the archive after extraction
       rm "$ARCHIVE_FILE"
