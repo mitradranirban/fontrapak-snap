@@ -7,6 +7,12 @@ on:
     # Run daily at 6:00 AM UTC
     - cron: '0 6 * * *'
   workflow_dispatch:  # Allow manual triggering
+    inputs:
+      force_build:
+        description: 'Force build even if no new release'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   check-release:
@@ -15,6 +21,7 @@ jobs:
       new-release: ${{ steps.check.outputs.new-release }}
       release-tag: ${{ steps.check.outputs.release-tag }}
       release-url: ${{ steps.check.outputs.release-url }}
+      force-build: ${{ inputs.force_build }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -50,6 +57,8 @@ jobs:
           else
             echo "No new release found"
             echo "new-release=false" >> $GITHUB_OUTPUT
+            echo "release-tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+            echo "release-url=$RELEASE_URL" >> $GITHUB_OUTPUT
           fi
       
       - name: Commit updated release tag
@@ -63,19 +72,19 @@ jobs:
 
   build-and-publish-snap:
     needs: check-release
-    if: needs.check-release.outputs.new-release == 'true'
+    # Build if there's a new release OR if force_build is true
+    if: |
+      needs.check-release.outputs.new-release == 'true' || 
+      needs.check-release.outputs.force-build == 'true'
     runs-on: ubuntu-latest
     steps:
-      # Step to check out the repository
       - name: Checkout repository
         uses: actions/checkout@v5
       
-      # Step to build the snap package
       - name: Build Snap
         uses: snapcore/action-build@v1
         id: build
       
-      # Step to upload snap as an artifact
       - name: Copy created snap
         run: |
           mkdir ul
@@ -87,7 +96,6 @@ jobs:
           name: fontra
           path: ul
       
-      # Step to publish the snap package
       - name: Publish Snap
         uses: snapcore/action-publish@v1
         env:
