@@ -72,6 +72,7 @@ parts:
     stage-packages:
       - libgl1
       - libegl1
+      - libgl1-mesa-glx
       - libxcb-cursor0
       - libxcb1
       - libxcb-render0
@@ -100,7 +101,7 @@ apps:
     environment:
       QT_QPA_PLATFORM: xcb  
       QT_QPA_PLATFORM_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt6/plugins/platforms  
-      LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa 
+      LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa:$SNAP/lib/$SNAPCRAFT_ARCH_TRIPLET
     plugs:
       - x11
       - opengl
