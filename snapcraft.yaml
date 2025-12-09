@@ -10,6 +10,21 @@ description: |
   variable font technology and improved usability of variable
   components as design elements.
 
+# Metadata fields to suppress linter warnings
+website:
+  - https://fontra.xyz
+  - https://docs.fontra.xyz
+
+source-code:
+  - https://github.com/fontra/fontra-pak
+  - https://github.com/fontra/fontra
+
+issues:
+  - https://github.com/fontra/fontra-pak/issues
+
+contact:
+  - https://fontra.xyz
+
 grade: stable
 confinement: strict
 adopt-info: fontrapak
@@ -21,32 +36,62 @@ architectures:
 parts:
   fontrapak:
     plugin: dump
-    # Snapcraft will download this automatically with network access
-    source: https://github.com/fontra/fontra-pak/releases/latest/download/FontraPakUbuntu.tgz
-    source-type: tar
+    source: .
     build-packages:
+      - wget
+      - tar
       - curl
       - jq
     override-pull: |
-      # First, let snapcraft download the source using its built-in mechanism
-      snapcraftctl pull
+      craftctl default
       
-      # Fetch version from GitHub API
-      echo "Fetching latest release tag from fontra/fontra-pak..."
-      LATEST_TAG=$(curl -s https://api.github.com/repos/fontra/fontra-pak/releases/latest | jq -r '.tag_name')
+      # Change directory to where Snapcraft expects source for this part
+      cd "$CRAFT_PART_SRC"
+      
+      # Get the latest release tag from GitHub API
+      echo "Fetching latest release information from fontra/fontra-pak..."
+      LATEST_RELEASE=$(curl -s https://api.github.com/repos/fontra/fontra-pak/releases/latest)
+      LATEST_TAG=$(echo "$LATEST_RELEASE" | jq -r '.tag_name')
       
       if [ "$LATEST_TAG" = "null" ] || [ -z "$LATEST_TAG" ]; then
         echo "ERROR: Failed to fetch latest release tag"
-        craftctl set version="0.0.1+unknown"
-      else
-        # Remove 'v' prefix if present
-        VERSION="${LATEST_TAG#v}"
-        echo "Setting snap version to '$VERSION'"
-        craftctl set version="$VERSION"
+        exit 1
       fi
       
+      echo "Latest release tag: $LATEST_TAG"
+      
+      # Set the snap version from the release tag (remove 'v' prefix if present)
+      VERSION="${LATEST_TAG#v}"
+      echo "Setting snap version to '$VERSION'"
+      craftctl set version="$VERSION"
+      
+      # Download the binary from the latest release
+      DOWNLOAD_URL="https://github.com/fontra/fontra-pak/releases/latest/download/FontraPakUbuntu.tgz"
+      ARCHIVE_FILE="FontraPakUbuntu.tgz"
+      
+      echo "Attempting to download $DOWNLOAD_URL..."
+      wget --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36" \
+        "$DOWNLOAD_URL" -O "$ARCHIVE_FILE"
+      
+      if [ ! -f "$ARCHIVE_FILE" ] || [ ! -s "$ARCHIVE_FILE" ]; then
+        echo "ERROR: Failed to download $ARCHIVE_FILE from $DOWNLOAD_URL"
+        exit 1
+      fi
+      
+      echo "Download successful."
+      echo "Extracting $ARCHIVE_FILE..."
+      tar -xzf "$ARCHIVE_FILE"
+      echo "Extraction complete."
+      
+      # List contents to verify structure
+      echo "Archive contents:"
+      ls -la
+      
+      # Remove the archive after extraction
+      rm "$ARCHIVE_FILE"
+      
     organize:
-      fontrapak/fontrapak: bin/fontrapak
+      fontrapak: bin/fontrapak
       
     stage-packages:
       - libgl1
