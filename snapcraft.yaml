@@ -67,7 +67,7 @@ parts:
       craftctl set version="$VERSION"
       
       # Download the binary from the latest release
-      DOWNLOAD_URL="https://github.com/fontra/fontra-pak/releases/latest/download/FontraPakUbuntu.tgz"
+      DOWNLOAD_URL="https://github.com/fontra/fontra-pak/releases/latest/download/FontraPak-Ubuntu.tgz"
       ARCHIVE_FILE="FontraPakUbuntu.tgz"
       
       echo "Attempting to download $DOWNLOAD_URL..."
