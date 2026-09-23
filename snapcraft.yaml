@@ -1,6 +1,6 @@
 name: fontrapak
 title: Fontra Pak (Unofficial snap package)
-base: core22
+base: core24
 summary: Browser-based variable-first font editor
 description: |
   Fontra is an open-source, browser-based, cross-platform, variable-first
@@ -30,9 +30,8 @@ grade: stable
 confinement: strict
 adopt-info: fontrapak
 
-architectures:
-  - build-on: amd64
-    build-for: amd64
+platforms:
+  amd64:
 
 parts:
   fontrapak:
@@ -104,7 +103,6 @@ parts:
     stage-packages:
       - libgl1
       - libegl1
-      - libgl1-mesa-glx
       - libxcb-cursor0
       - libxcb1
       - libxcb-render0
@@ -112,9 +110,9 @@ parts:
       - libxcb-randr0
       - libxcb-xfixes0
       - libxkbcommon0
-      - libqt6gui6
-      - libqt6core6
-      - libqt6widgets6
+      - libqt6gui6t64
+      - libqt6core6t64
+      - libqt6widgets6t64
       - libstdc++6
       - qt6-qpa-plugins
 
